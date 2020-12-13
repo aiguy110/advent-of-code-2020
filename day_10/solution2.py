@@ -42,21 +42,17 @@ def valid_configs(adapters, end_adapter, start_adapter=0, seen_configs=set()):
         yield adapters[:-1]
 
 def get_islands(adapters):
-    island_start_ind = None
+    island_start_ind = 0
     if adapters[0] == 3:
         island_start_ind = 0
     
     islands = []
     for i in range(len(adapters)-1):
         if adapters[i+1] - adapters[i] == 3:
-            if island_start_ind == None:
-                island_start_ind = i+1
-            else:
-                islands.append( (island_start_ind, i+1) )
-                island_start_ind = i+1
+            islands.append( (island_start_ind, i+1) )
+            island_start_ind = i+1
     
-    if island_start_ind != None:
-        islands.append( (island_start_ind, len(adapters)) )
+    islands.append( (island_start_ind, len(adapters)) )
     
     return islands
 
