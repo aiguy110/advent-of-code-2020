@@ -41,9 +41,19 @@ def load_tickets(filename):
 def invalid_values(ticket, field_reqs):
     bad_vals = []
     for ticket_field in ticket:
+        field_is_bad = True
         for _, reqs in field_reqs:
             for req_min, req_max in reqs:
-                pass
+                if req_min <= ticket_field and req_max >= ticket_field:
+                    field_is_bad = False
+                    break
+                if not field_is_bad:
+                    break
+
+        if field_is_bad:
+            bad_vals.append( ticket_field )
+        
+    return bad_vals
 
 print( load_tickets(sys.argv[1]) )
 
