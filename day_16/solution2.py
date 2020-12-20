@@ -55,10 +55,29 @@ def invalid_values(ticket, field_reqs):
         
     return bad_vals
 
+def only_valid_tickets(tickets, field_reqs):
+    valid_tickets = []
+    for ticket in tickets:
+        if len(invalid_values(ticket, field_reqs)) == 0:
+            valid_tickets.append( ticket )
+    
+    return valid_tickets
+
+def extract_column(tickets, col):
+    vals = []
+    for ticket in tickets:
+        vals.append( ticket[col] )
+    
+    return vals
+
+def column_meets_reqs(column, reqs):
+    for val in column:
+        meets_reqs = False
+        for req_min, req_max in reqs:
+            if val >= req_min and val <= req_max:
+                meets_reqs = True
 
 notes = load_tickets(sys.argv[1])
-all_bad_vals = []
-for ticket in notes['other_tickets']:
-    all_bad_vals += invalid_values(ticket, notes['field_reqs'])
-
-print( sum(all_bad_vals) )
+valid_tickets = only_valid_tickets(notes['other_tickets'], notes['field_reqs'])
+for ticket in valid_tickets:
+    print(ticket)
