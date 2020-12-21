@@ -76,8 +76,48 @@ def column_meets_reqs(column, reqs):
         for req_min, req_max in reqs:
             if val >= req_min and val <= req_max:
                 meets_reqs = True
+                break
+        if not meets_reqs:
+            return False
+    
+    return True
+
+def deduce_fields(tickets, field_reqs):
+    possible_cols = {}
+    for field_name, reqs in field_reqs:
+        for c in len(ticket[0]):
+            column = extract_column(tickets, c)
+            if column_meets_reqs(column, reqs):
+                if field_name not in possible_cols:
+                    possible_cols[field_name] = []
+                possible_cols[field_name].append( c )
+    
+    done = False
+    while not done:
+        done = True
+        solved_cols = []
+        for field_name in possible_cols:
+            if len(possible_cols[field_name]) == 1 and possible_cols[field_name][0] not in solved_cols:
+                solved_cols.append( possible_cols[field_name][0] )
+                done = False
+                break
+
+            if len(possible_cols[field_name]) > 1:
+                for i in range(len(possible_cols[field_name])):
+                    if possible_cols[field_name][i] in solved_cols:
+                        del possible_cols[field_name][i]
+                        done = False
+                        break
+                else:
+                    continue
+                break
+    
+    return possible_cols
+
+
+
 
 notes = load_tickets(sys.argv[1])
 valid_tickets = only_valid_tickets(notes['other_tickets'], notes['field_reqs'])
-for ticket in valid_tickets:
-    print(ticket)
+deduced_fields = deduce_fields(valid_tickets, notes['field_reqs'])
+print(deduceds_fields)
