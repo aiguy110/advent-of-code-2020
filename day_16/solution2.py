@@ -11,7 +11,7 @@ def load_tickets(filename):
             return list( map(int, ticket_line.split(',')) )
 
         for line in f:
-            if re.match(r'[a-z]+: [0-9a-z\- ]+', line):
+            if re.match(r'[a-z ]+: [0-9a-z\- ]+', line):
                 field_name = line.split(': ')[0]
                 reqs = []
                 for m in re.finditer(r'(\d+)-(\d+)', line):
@@ -82,42 +82,35 @@ def column_meets_reqs(column, reqs):
     
     return True
 
-def deduce_fields(tickets, field_reqs):
-    possible_cols = {}
-    for field_name, reqs in field_reqs:
-        for c in len(ticket[0]):
-            column = extract_column(tickets, c)
-            if column_meets_reqs(column, reqs):
-                if field_name not in possible_cols:
-                    possible_cols[field_name] = []
-                possible_cols[field_name].append( c )
+def deduce_fields(tickets, cols, field_reqs, possible_cols={}):
+    # Returns a permutation of cols such that: 
+    # colums_meets_reqs( extract_column(tickets, cols[i]), field_reqs[i]) == True for all i
+    if len(cols) == 0:
+        return cols
     
-    done = False
-    while not done:
-        done = True
-        solved_cols = []
-        for field_name in possible_cols:
-            if len(possible_cols[field_name]) == 1 and possible_cols[field_name][0] not in solved_cols:
-                solved_cols.append( possible_cols[field_name][0] )
-                done = False
-                break
+    if possible_cols == {}:
+        for field_name, reqs in field_reqs:
+            for c in range(len(tickets[0])):
+                column = extract_column(tickets, c)
+                if column_meets_reqs(column, reqs):
+                    if field_name not in possible_cols:
+                        possible_cols[field_name] = []
+                    possible_cols[field_name].append( c )
+    
+    for i in range(len(cols)):
+        if cols[i] in possible_cols[field_reqs[0][0]]:
+            new_cols = cols[:i] + cols[i+1:]
+            down_stream_result = deduce_fields(tickets, new_cols, field_reqs[1:], possible_cols)
+            if down_stream_result != None:
+                return [ cols[i] ] + new_cols
 
-            if len(possible_cols[field_name]) > 1:
-                for i in range(len(possible_cols[field_name])):
-                    if possible_cols[field_name][i] in solved_cols:
-                        del possible_cols[field_name][i]
-                        done = False
-                        break
-                else:
-                    continue
-                break
-    
-    return possible_cols
+    return None
 
 
 
 
 notes = load_tickets(sys.argv[1])
 valid_tickets = only_valid_tickets(notes['other_tickets'], notes['field_reqs'])
-deduced_fields = deduce_fields(valid_tickets, notes['field_reqs'])
-print(deduceds_fields)
+print(f'Found {len(valid_tickets)} valid tickets')
+deduced_fields = deduce_fields(valid_tickets, list(range(len(valid_tickets[0]))), notes['field_reqs'])
+print(deduced_fields)
