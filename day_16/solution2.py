@@ -102,7 +102,7 @@ def deduce_fields(tickets, cols, field_reqs, possible_cols={}):
             new_cols = cols[:i] + cols[i+1:]
             down_stream_result = deduce_fields(tickets, new_cols, field_reqs[1:], possible_cols)
             if down_stream_result != None:
-                return [ cols[i] ] + new_cols
+                return [ cols[i] ] + down_stream_result
 
     return None
 
@@ -113,4 +113,10 @@ notes = load_tickets(sys.argv[1])
 valid_tickets = only_valid_tickets(notes['other_tickets'], notes['field_reqs'])
 print(f'Found {len(valid_tickets)} valid tickets')
 deduced_fields = deduce_fields(valid_tickets, list(range(len(valid_tickets[0]))), notes['field_reqs'])
-print(deduced_fields)
+
+product = 1
+for i in range(len(notes['field_reqs'])):
+    if 'departure' in notes['field_reqs'][i][0]:
+        product *= notes['my_ticket'][deduced_fields[i]]
+
+print(product)
